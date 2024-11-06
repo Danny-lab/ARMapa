@@ -8,18 +8,21 @@ navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment
 
 // Objeto con barrios y sus imágenes correspondientes
 const barrios = {
-   "Andalucía": "imagenes/Isla.jpg",
+  "Andalucía": "imagenes/Isla.jpg",
   "Barrio Norte": "imagenes/barrio_norte.jpg",
   "Barrio Sur": "imagenes/barrio_sur.jpg",
   "Barrio Once": "imagenes/barrio_once.jpg",
   // Agrega más barrios aquí si es necesario
 };
 
-const worker = Tesseract.createWorker({
-  logger: m => console.log(m)
-});
-
 async function reconocerTexto() {
+  const loader = document.getElementById('loader');
+  loader.style.display = 'block';
+
+  const worker = Tesseract.createWorker({
+    logger: m => console.log(m)
+  });
+
   try {
     const camera = document.getElementById('camera');
     const canvas = document.createElement('canvas');
@@ -52,8 +55,11 @@ async function reconocerTexto() {
       console.log('No se encontró coincidencia con ningún barrio.');
     }
 
+    loader.style.display = 'none';
+
   } catch (error) {
     console.error('Error al reconocer texto:', error);
+    loader.style.display = 'none';
   }
 }
 
