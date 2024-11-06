@@ -1,15 +1,15 @@
  // Intentar acceder a la cámara trasera
-    navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { exact: "environment" } }
-    })
-    .then(stream => {
-      const camera = document.getElementById('camera');
-      camera.srcObject = stream;
-      camera.play();
-    })
-    .catch(error => {
-      console.error('Error al obtener acceso a la cámara:', error);
-    });
+navigator.mediaDevices.getUserMedia({
+  video: { facingMode: "environment" }
+})
+.then(stream => {
+  const camera = document.getElementById('camera');
+  camera.srcObject = stream;
+  camera.play();
+})
+.catch(error => {
+  console.error('Error al obtener acceso a la cámara:', error);
+});
 
     // Objeto con barrios y sus imágenes correspondientes
     const barrios = {
