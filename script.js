@@ -1,32 +1,25 @@
-  navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { exact: "environment" } // Intenta acceder a la cámara trasera
-      }
+ // Intentar acceder a la cámara trasera
+    navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { exact: "environment" } }
     })
     .then(stream => {
       const camera = document.getElementById('camera');
       camera.srcObject = stream;
+      camera.play();
     })
     .catch(error => {
       console.error('Error al obtener acceso a la cámara:', error);
-      // Si falla, intenta abrir cualquier cámara disponible
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-          const camera = document.getElementById('camera');
-          camera.srcObject = stream;
-        })
-        .catch(error => console.error('Error al obtener acceso a cualquier cámara:', error));
     });
 
-    // Objeto con barrios y imágenes
+    // Objeto con barrios y sus imágenes correspondientes
     const barrios = {
-      "Andalucía": "Isla.jpg",
+      "Andalucía": "imagenes/Isla.jpg",
       "Barrio Norte": "imagenes/barrio_norte.jpg",
       "Barrio Sur": "imagenes/barrio_sur.jpg",
       "Barrio Once": "imagenes/barrio_once.jpg",
     };
 
-    // Crear y configurar el worker de Tesseract.js
+    // Crear el worker de Tesseract.js
     const worker = Tesseract.createWorker({
       logger: m => console.log(m)
     });
@@ -49,14 +42,21 @@
 
         const textoLimpio = text.trim().toLowerCase().replace(/[^a-zA-Z0-9áéíóúñü\s]/g, '');
 
+        let encontrado = false;
         for (const barrio in barrios) {
-          if (textoLimpio.includes(barrio.toLowerCase())) { // Coincidencia parcial
+          if (textoLimpio.includes(barrio.toLowerCase())) {
             mostrarImagenRA(barrios[barrio]);
+            encontrado = true;
             break;
           }
         }
 
         await worker.terminate();
+
+        if (!encontrado) {
+          console.log('No se encontró coincidencia con ningún barrio.');
+        }
+
       } catch (error) {
         console.error('Error al reconocer texto:', error);
       }
@@ -64,19 +64,11 @@
 
     function mostrarImagenRA(imagen) {
       const overlay = document.getElementById('overlay');
-      overlay.innerHTML = ''; // Limpiar contenido previo
-
-      const contenedorImagen = document.createElement('div');
-      contenedorImagen.style.backgroundImage = `url(${imagen})`;
-      contenedorImagen.style.transform = "perspective(600px) rotateY(15deg)"; // Efecto 3D leve
-      overlay.appendChild(contenedorImagen);
-
-      const botonCerrar = document.createElement('button');
-      botonCerrar.textContent = 'Cerrar';
-      botonCerrar.addEventListener('click', () => {
-        overlay.style.display = 'none';
-      });
-      
-      overlay.appendChild(botonCerrar);
+      const imageContainer = document.querySelector('.image-container');
+      imageContainer.style.backgroundImage = `url(${imagen})`;
       overlay.style.display = 'flex';
     }
+
+    document.getElementById('close-overlay').addEventListener('click', () => {
+      document.getElementById('overlay').style.display = 'none';
+    });
