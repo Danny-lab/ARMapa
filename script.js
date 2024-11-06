@@ -56,12 +56,15 @@ async function reconocerTexto() {
 
     await worker.terminate();
 
-    if (!encontrado) {
-      console.log('No se encontró coincidencia con ningún barrio.');
+    if (encontrado) {
+      alert('Texto reconocido correctamente.');
+    } else {
+      alert('No se encontró coincidencia con ningún barrio.');
     }
 
   } catch (error) {
     console.error('Error al reconocer texto:', error);
+    alert('Error al reconocer el texto.');
   }
 }
 
