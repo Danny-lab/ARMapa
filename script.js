@@ -8,7 +8,7 @@ navigator.mediaDevices.getUserMedia({ video: true })
 
 // Objeto con barrios y sus imágenes correspondientes
 const barrios = {
-  "Andalucía": "imagenes/Isla.jpg",
+  "Andalucía": "Isla.jpg",
   "Barrio Norte": "imagenes/barrio_norte.jpg",
   "Barrio Sur": "imagenes/barrio_sur.jpg",
   "Barrio Once": "imagenes/barrio_once.jpg",
