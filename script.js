@@ -1,4 +1,12 @@
-navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" } } })
+navigator.mediaDevices.enumerateDevices()
+  .then(devices => {
+    const videoDevices = devices.filter(device => device.kind === 'videoinput');
+    const rearCamera = videoDevices.find(device => device.label.toLowerCase().includes('back')) || videoDevices[0];
+
+    return navigator.mediaDevices.getUserMedia({
+      video: { deviceId: rearCamera.deviceId }
+    });
+  })
   .then(stream => {
     const camera = document.getElementById('camera');
     camera.srcObject = stream;
@@ -15,14 +23,11 @@ const barrios = {
   // Agrega más barrios aquí si es necesario
 };
 
+const worker = Tesseract.createWorker({
+  logger: m => console.log(m)
+});
+
 async function reconocerTexto() {
-  const loader = document.getElementById('loader');
-  loader.style.display = 'block';
-
-  const worker = Tesseract.createWorker({
-    logger: m => console.log(m)
-  });
-
   try {
     const camera = document.getElementById('camera');
     const canvas = document.createElement('canvas');
@@ -55,11 +60,8 @@ async function reconocerTexto() {
       console.log('No se encontró coincidencia con ningún barrio.');
     }
 
-    loader.style.display = 'none';
-
   } catch (error) {
     console.error('Error al reconocer texto:', error);
-    loader.style.display = 'none';
   }
 }
 
