@@ -1,74 +1,69 @@
- // Intentar acceder a la cámara trasera
-navigator.mediaDevices.getUserMedia({
-  video: { facingMode: "environment" }
-})
-.then(stream => {
-  const camera = document.getElementById('camera');
-  camera.srcObject = stream;
-  camera.play();
-})
-.catch(error => {
-  console.error('Error al obtener acceso a la cámara:', error);
+navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" } } })
+  .then(stream => {
+    const camera = document.getElementById('camera');
+    camera.srcObject = stream;
+    camera.play();
+  })
+  .catch(error => console.error('Error al obtener acceso a la cámara:', error));
+
+// Objeto con barrios y sus imágenes correspondientes
+const barrios = {
+  "Andalucía": "Isla.jpg",
+  "Barrio Norte": "imagenes/barrio_norte.jpg",
+  "Barrio Sur": "imagenes/barrio_sur.jpg",
+  "Barrio Once": "imagenes/barrio_once.jpg",
+  // Agrega más barrios aquí si es necesario
+};
+
+const worker = Tesseract.createWorker({
+  logger: m => console.log(m)
 });
 
-    // Objeto con barrios y sus imágenes correspondientes
-    const barrios = {
-      "Andalucía": "imagenes/Isla.jpg",
-      "Barrio Norte": "imagenes/barrio_norte.jpg",
-      "Barrio Sur": "imagenes/barrio_sur.jpg",
-      "Barrio Once": "imagenes/barrio_once.jpg",
-    };
+async function reconocerTexto() {
+  try {
+    const camera = document.getElementById('camera');
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = camera.videoWidth;
+    canvas.height = camera.videoHeight;
+    context.drawImage(camera, 0, 0, canvas.width, canvas.height);
+    const imageData = canvas.toDataURL('image/png');
 
-    // Crear el worker de Tesseract.js
-    const worker = Tesseract.createWorker({
-      logger: m => console.log(m)
-    });
+    await worker.load();
+    await worker.loadLanguage('spa');
+    await worker.initialize('spa');
+    const { data: { text } } = await worker.recognize(imageData);
+    console.log('Texto reconocido:', text);
 
-    async function reconocerTexto() {
-      try {
-        const camera = document.getElementById('camera');
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        canvas.width = camera.videoWidth;
-        canvas.height = camera.videoHeight;
-        context.drawImage(camera, 0, 0, canvas.width, canvas.height);
-        const imageData = canvas.toDataURL('image/png');
+    const textoLimpio = text.trim().toLowerCase().replace(/[^a-zA-Z0-9áéíóúñü\s]/g, '');
 
-        await worker.load();
-        await worker.loadLanguage('spa');
-        await worker.initialize('spa');
-        const { data: { text } } = await worker.recognize(imageData);
-        console.log('Texto reconocido:', text);
-
-        const textoLimpio = text.trim().toLowerCase().replace(/[^a-zA-Z0-9áéíóúñü\s]/g, '');
-
-        let encontrado = false;
-        for (const barrio in barrios) {
-          if (textoLimpio.includes(barrio.toLowerCase())) {
-            mostrarImagenRA(barrios[barrio]);
-            encontrado = true;
-            break;
-          }
-        }
-
-        await worker.terminate();
-
-        if (!encontrado) {
-          console.log('No se encontró coincidencia con ningún barrio.');
-        }
-
-      } catch (error) {
-        console.error('Error al reconocer texto:', error);
+    let encontrado = false;
+    for (const barrio in barrios) {
+      if (textoLimpio.includes(barrio.toLowerCase())) {
+        mostrarImagenRA(barrios[barrio]);
+        encontrado = true;
+        break;
       }
     }
 
-    function mostrarImagenRA(imagen) {
-      const overlay = document.getElementById('overlay');
-      const imageContainer = document.querySelector('.image-container');
-      imageContainer.style.backgroundImage = `url(${imagen})`;
-      overlay.style.display = 'flex';
+    await worker.terminate();
+
+    if (!encontrado) {
+      console.log('No se encontró coincidencia con ningún barrio.');
     }
 
-    document.getElementById('close-overlay').addEventListener('click', () => {
-      document.getElementById('overlay').style.display = 'none';
-    });
+  } catch (error) {
+    console.error('Error al reconocer texto:', error);
+  }
+}
+
+function mostrarImagenRA(imagen) {
+  const overlay = document.getElementById('overlay');
+  const imageContainer = document.querySelector('.image-container');
+  imageContainer.style.backgroundImage = `url(${imagen})`;
+  overlay.style.display = 'flex';
+}
+
+document.getElementById('close-overlay').addEventListener('click', () => {
+  document.getElementById('overlay').style.display = 'none';
+});
