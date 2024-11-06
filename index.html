@@ -5,18 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Realidad Aumentada</title>
   <link rel="stylesheet" href="style.css">
+  <!-- Incluye las librerías necesarias -->
   <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
   <script src="https://cdn.rawgit.com/jeromeetienne/ar.js/1.7.2/aframe/build/aframe-ar.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.1.1/dist/tesseract.min.js"></script>
 </head>
 <body>
-  <video id="camera" width="640" height="480"></video>
-  <div id="overlay">
-    <div class="image-container"></div>
-    <button id="close-overlay">Cerrar</button>
+  <div class="container">
+    <video id="camera" width="640" height="480"></video>
+    <div id="overlay">
+      <div class="image-container"></div>
+      <button id="close-overlay">Cerrar</button>
+    </div>
+    <button id="boton-reconocer" onclick="reconocerTexto()">Reconocer texto</button>
+    <div id="loader" class="loader" style="display: none;"></div>
   </div>
-  <button id="boton-reconocer" onclick="reconocerTexto()">Reconocer texto</button>
+  <a-scene embedded arjs>
+    <a-marker preset="hiro">
+      <a-entity id="image-entity" geometry="primitive: plane; height: 1; width: 1" material="src: #image-texture" position="0 0.5 0"></a-entity>
+    </a-marker>
+    <a-entity camera></a-entity>
+  </a-scene>
   <script src="script.js"></script>
 </body>
 </html>
