@@ -58,7 +58,7 @@ async function reconocerTexto() {
     await worker.terminate();
 
     if (encontrado) {
-      alert('Texto reconocido correctamente.');
+      alert('Barrio reconocido correctamente, ok para continuar');
     } else {
       alert('No se reconoce el barrio ,Intentalo  de nuevo .');
       location.reload();
