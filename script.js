@@ -19,7 +19,7 @@ const barrios = {
   "Andalucia": "imagenes/Andalucia.jpg",
   "Rosa": "imagenes/Rosa.jpg",
   "Barrio Moscu": "imagenes/Moscu.jpg",
-  "Pablo Sexto": "imagenes/Pablo.jpg",
+  "PabloSexto": "imagenes/Pablo.jpg",
   "La Isla": "imagenes/Isla.jpg",
   // Agrega más barrios aquí si es necesario
 };
