@@ -78,4 +78,5 @@ function mostrarImagenRA(imagen) {
 
 document.getElementById('close-overlay').addEventListener('click', () => {
   document.getElementById('overlay').style.display = 'none';
+  location.reload();
 });
