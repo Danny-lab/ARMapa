@@ -18,7 +18,7 @@ navigator.mediaDevices.enumerateDevices()
 const barrios = {
   "Andalucia": "imagenes/Andalucia.jpg",
   "Rosa": "imagenes/Rosa.jpg",
-  "Moscu N.1": "imagenes/Moscu.jpg",
+  "Moscu": "imagenes/Moscu.jpg",
   "La Isla": "imagenes/Isla.jpg",
   // Agrega más barrios aquí si es necesario
 };
