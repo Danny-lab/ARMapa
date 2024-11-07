@@ -16,7 +16,7 @@ navigator.mediaDevices.enumerateDevices()
 
 // Objeto con barrios y sus imágenes correspondientes
 const barrios = {
-  "Andalucía": "imagenes/Andalucia.jpg",
+  "Andalucia": "imagenes/Andalucia.jpg",
   "Rosa": "imagenes/Rosa.jpg",
   "Moscu N.1": "imagenes/Moscu.jpg",
   "La Isla": "imagenes/Isla.jpg",
