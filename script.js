@@ -60,12 +60,14 @@ async function reconocerTexto() {
     if (encontrado) {
       alert('Texto reconocido correctamente.');
     } else {
-      alert('No se encontró coincidencia con ningún barrio.');
+      alert('No se reconoce el barrio ,Intentalo  de nuevo .');
+      location.reload();
     }
 
   } catch (error) {
-    console.error('Error al reconocer texto:', error);
-    alert('Error al reconocer el texto.');
+    console.error('Error al reconocer el barrio:', error);
+    alert('Error al reconocer el barrio.');
+    location.reload();
   }
 }
 
