@@ -27,7 +27,7 @@ body {
 }
 
 .image-container {
-  width: 30%;
+  width: 100%;
   max-width: 400px;
   height: 80%;
   background-size: cover;
