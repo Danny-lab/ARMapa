@@ -12,7 +12,6 @@ async function iniciarCamara() {
     camera.srcObject = stream;
     camera.play();
 
-    // Mostrar el mensaje de escaneo activo
     document.getElementById('mensajeEscaneando').style.display = 'block';
 
   } catch (error) {
@@ -21,7 +20,6 @@ async function iniciarCamara() {
   }
 }
 
-// Función para detener la cámara
 function detenerCamara() {
   const camera = document.getElementById('camera');
   const stream = camera.srcObject;
@@ -29,12 +27,9 @@ function detenerCamara() {
   
   tracks.forEach(track => track.stop());
   camera.srcObject = null;
-
-  // Ocultar el mensaje de escaneo
   document.getElementById('mensajeEscaneando').style.display = 'none';
 }
 
-// Objeto con barrios y sus imágenes correspondientes
 const barrios = {
   "Andalucia": "imagenes/Andalucia.jpg",
   "La Rosa": "imagenes/Rosa.jpg",
@@ -43,12 +38,10 @@ const barrios = {
   "La Isla": "imagenes/Isla.jpg",
 };
 
-// Configuración del trabajador de Tesseract
 const worker = Tesseract.createWorker({
   logger: m => console.log(m)
 });
 
-// Función para normalizar texto eliminando tildes y caracteres especiales
 function limpiarTexto(texto) {
   return texto
     .normalize("NFD")
@@ -78,7 +71,7 @@ async function reconocerTexto() {
     let encontrado = false;
     for (const barrio in barrios) {
       if (textoLimpio.includes(limpiarTexto(barrio))) {
-        mostrarImagenRA(barrios[barrio]);
+        mostrarResultado(barrio, barrios[barrio]);
         encontrado = true;
         break;
       }
@@ -87,11 +80,11 @@ async function reconocerTexto() {
     await worker.terminate();
 
     if (encontrado) {
+      detenerCamara();
+      clearInterval(scanInterval);  // Detenemos el escaneo en intervalos
       alert('Barrio reconocido correctamente. Pulsa OK para continuar');
-      detenerCamara(); // Detener la cámara cuando se reconoce el texto
     } else {
-      alert('No se reconoce el barrio. Inténtalo de nuevo.');
-      location.reload();
+      console.log('No se reconoce el barrio. Intentando de nuevo...');
     }
 
   } catch (error) {
@@ -101,19 +94,15 @@ async function reconocerTexto() {
   }
 }
 
-// Función para mostrar la imagen correspondiente al barrio reconocido
-function mostrarImagenRA(imagen) {
-  const overlay = document.getElementById('overlay');
-  const imageContainer = document.querySelector('.image-container');
-  imageContainer.style.backgroundImage = `url(${imagen})`;
-  overlay.style.display = 'flex';
+function mostrarResultado(barrio, imagen) {
+  const resultadoNombre = document.getElementById('resultadoNombre');
+  const resultadoImagen = document.getElementById('resultadoImagen');
+
+  resultadoNombre.textContent = `Barrio reconocido: ${barrio}`;
+  resultadoImagen.style.backgroundImage = `url(${imagen})`;
+  resultadoImagen.style.display = 'block';
 }
 
-// Evento para cerrar el overlay y recargar la página
-document.getElementById('close-overlay').addEventListener('click', () => {
-  document.getElementById('overlay').style.display = 'none';
-  location.reload();
-});
-
-// Iniciar la cámara al cargar la página
+// Iniciar la cámara y escaneo en intervalos
 iniciarCamara();
+const scanInterval = setInterval(reconocerTexto, 5000);  // Escanear cada 5 segundos
