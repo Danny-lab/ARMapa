@@ -1,3 +1,20 @@
+let zoomLevel = 1;
+
+function zoomIn() {
+  zoomLevel += 0.1;
+  applyZoom();
+}
+
+function zoomOut() {
+  zoomLevel = Math.max(1, zoomLevel - 0.1); // Evita que el zoom sea menor que 1
+  applyZoom();
+}
+
+function applyZoom() {
+  const camera = document.getElementById('camera');
+  camera.style.transform = `scale(${zoomLevel})`;
+}
+
 navigator.mediaDevices.enumerateDevices()
   .then(devices => {
     const videoDevices = devices.filter(device => device.kind === 'videoinput');
@@ -60,7 +77,7 @@ async function reconocerTexto() {
     if (encontrado) {
       alert('Barrio reconocido correctamente, ok para continuar');
     } else {
-      alert('No se reconoce el barrio ,Intentalo  de nuevo .');
+      alert('No se reconoce el barrio, inténtalo de nuevo.');
       location.reload();
     }
 
