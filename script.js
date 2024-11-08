@@ -57,8 +57,6 @@ async function detectarBarrioEnTiempoReal(camera) {
 
       if (mayorSimilitud > 0.8) { // Ajusta el umbral según sea necesario
         document.getElementById('barrio-detectado').value = mejorCoincidencia;
-        aplicarZoom(camera);
-        mostrarImagenRA(barrios[mejorCoincidencia]);
       } else {
         document.getElementById('barrio-detectado').value = 'No reconocido';
       }
@@ -84,16 +82,16 @@ function calcularSimilitud(a, b) {
   return equivalencias / maxLength;
 }
 
-function aplicarZoom(camera) {
-  camera.style.transform = 'scale(1.5)'; // Ajusta el valor de escala según sea necesario
-  camera.style.transformOrigin = 'center center';
-}
-
-function mostrarImagenRA(imagen) {
-  const overlay = document.getElementById('overlay');
-  const imageContainer = document.querySelector('.image-container');
-  imageContainer.style.backgroundImage = `url(${imagen})`;
-  overlay.style.display = 'flex';
+function mostrarImagenRA() {
+  const barrioDetectado = document.getElementById('barrio-detectado').value;
+  if (barrios[barrioDetectado]) {
+    const overlay = document.getElementById('overlay');
+    const imageContainer = document.querySelector('.image-container');
+    imageContainer.style.backgroundImage = `url(${barrios[barrioDetectado]})`;
+    overlay.style.display = 'flex';
+  } else {
+    alert('No se reconoce el barrio, inténtalo de nuevo.');
+  }
 }
 
 document.getElementById('close-overlay').addEventListener('click', () => {
