@@ -14,14 +14,12 @@ navigator.mediaDevices.enumerateDevices()
   })
   .catch(error => console.error('Error al obtener acceso a la cámara:', error));
 
-// Objeto con barrios y sus imágenes correspondientes
 const barrios = {
   "Andalucia": "imagenes/Andalucia.jpg",
   "La Rosa": "imagenes/Rosa.jpg",
   "Barrio Moscu": "imagenes/Moscu.jpg",
   "Pablo VI": "imagenes/Pablo.jpg",
   "La Isla": "imagenes/Isla.jpg",
-  // Agrega más barrios aquí si es necesario
 };
 
 const worker = Tesseract.createWorker({
@@ -50,6 +48,7 @@ async function reconocerTexto() {
     for (const barrio in barrios) {
       if (textoLimpio.includes(barrio.toLowerCase())) {
         mostrarImagenRA(barrios[barrio]);
+        aplicarZoom(camera);
         encontrado = true;
         break;
       }
@@ -60,7 +59,7 @@ async function reconocerTexto() {
     if (encontrado) {
       alert('Barrio reconocido correctamente, ok para continuar');
     } else {
-      alert('No se reconoce el barrio ,Intentalo  de nuevo .');
+      alert('No se reconoce el barrio, inténtalo de nuevo.');
       location.reload();
     }
 
@@ -69,6 +68,11 @@ async function reconocerTexto() {
     alert('Error al reconocer el barrio.');
     location.reload();
   }
+}
+
+function aplicarZoom(camera) {
+  camera.style.transform = 'scale(1.5)'; // Ajusta el valor de escala según sea necesario
+  camera.style.transformOrigin = 'center center';
 }
 
 function mostrarImagenRA(imagen) {
