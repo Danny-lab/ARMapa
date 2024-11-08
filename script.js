@@ -56,8 +56,11 @@ async function detectarBarrioEnTiempoReal(camera) {
       }
 
       if (mayorSimilitud > 0.8) { // Ajusta el umbral según sea necesario
+        document.getElementById('barrio-detectado').value = mejorCoincidencia;
         aplicarZoom(camera);
         mostrarImagenRA(barrios[mejorCoincidencia]);
+      } else {
+        document.getElementById('barrio-detectado').value = 'No reconocido';
       }
     }).catch(error => console.error('Error al reconocer el texto:', error));
 
