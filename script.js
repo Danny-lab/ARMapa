@@ -26,9 +26,18 @@ const barrios = {
   "La Isla": "imagenes/Isla.jpg",
 };
 
+// Configuración del trabajador de Tesseract
 const worker = Tesseract.createWorker({
   logger: m => console.log(m)
 });
+
+// Función para normalizar texto eliminando tildes y caracteres especiales
+function limpiarTexto(texto) {
+  return texto
+    .normalize("NFD") // Normaliza a una forma de descomposición
+    .replace(/[\u0300-\u036f]/g, "") // Elimina los caracteres de acento y diacríticos
+    .toLowerCase(); // Convierte el texto a minúsculas para la comparación
+}
 
 async function reconocerTexto() {
   try {
@@ -40,25 +49,31 @@ async function reconocerTexto() {
     context.drawImage(camera, 0, 0, canvas.width, canvas.height);
     const imageData = canvas.toDataURL('image/png');
 
+    // Cargar e inicializar Tesseract
     await worker.load();
     await worker.loadLanguage('spa');
     await worker.initialize('spa');
+
+    // Reconocer texto en la imagen
     const { data: { text } } = await worker.recognize(imageData);
     console.log('Texto reconocido:', text);
 
-    const textoLimpio = text.trim().toLowerCase();
+    // Limpiar el texto reconocido para comparar sin tildes ni caracteres especiales
+    const textoLimpio = limpiarTexto(text);
 
     let encontrado = false;
     for (const barrio in barrios) {
-      if (textoLimpio.includes(barrio.toLowerCase())) {
+      if (textoLimpio.includes(limpiarTexto(barrio))) {
         mostrarImagenRA(barrios[barrio]);
         encontrado = true;
         break;
       }
     }
 
+    // Terminar el trabajador de Tesseract
     await worker.terminate();
 
+    // Mostrar mensaje según el resultado
     if (encontrado) {
       alert('Barrio reconocido correctamente. Pulsa OK para continuar');
     } else {
@@ -73,6 +88,7 @@ async function reconocerTexto() {
   }
 }
 
+// Función para mostrar la imagen correspondiente al barrio reconocido
 function mostrarImagenRA(imagen) {
   const overlay = document.getElementById('overlay');
   const imageContainer = document.querySelector('.image-container');
@@ -80,6 +96,7 @@ function mostrarImagenRA(imagen) {
   overlay.style.display = 'flex';
 }
 
+// Evento para cerrar el overlay y recargar la página
 document.getElementById('close-overlay').addEventListener('click', () => {
   document.getElementById('overlay').style.display = 'none';
   location.reload();
