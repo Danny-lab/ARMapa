@@ -11,87 +11,71 @@ navigator.mediaDevices.enumerateDevices()
     const camera = document.getElementById('camera');
     camera.srcObject = stream;
     camera.play();
-    detectarBarrioEnTiempoReal(camera);
   })
   .catch(error => console.error('Error al obtener acceso a la cámara:', error));
 
+// Objeto con barrios y sus imágenes correspondientes
 const barrios = {
-  "1": "imagenes/Andalucia.jpg",
+  "Andalucia": "imagenes/Andalucia.jpg",
   "La Rosa": "imagenes/Rosa.jpg",
   "Barrio Moscu": "imagenes/Moscu.jpg",
   "Pablo VI": "imagenes/Pablo.jpg",
   "La Isla": "imagenes/Isla.jpg",
+  // Agrega más barrios aquí si es necesario
 };
 
 const worker = Tesseract.createWorker({
   logger: m => console.log(m)
 });
 
-async function detectarBarrioEnTiempoReal(camera) {
-  await worker.load();
-  await worker.loadLanguage('spa');
-  await worker.initialize('spa');
-
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
-
-  function procesarFrame() {
+async function reconocerTexto() {
+  try {
+    const camera = document.getElementById('camera');
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
     canvas.width = camera.videoWidth;
     canvas.height = camera.videoHeight;
     context.drawImage(camera, 0, 0, canvas.width, canvas.height);
     const imageData = canvas.toDataURL('image/png');
 
-    worker.recognize(imageData).then(({ data: { text } }) => {
-      const textoLimpio = text.trim().toLowerCase().replace(/[^a-zA-Z0-9áéíóúñü\s]/g, '');
+    await worker.load();
+    await worker.loadLanguage('spa');
+    await worker.initialize('spa');
+    const { data: { text } } = await worker.recognize(imageData);
+    console.log('Texto reconocido:', text);
 
-      let mejorCoincidencia = null;
-      let mayorSimilitud = 0;
+    const textoLimpio = text.trim().toLowerCase().replace(/[^a-zA-Z0-9áéíóúñü\s]/g, '');
 
-      for (const barrio in barrios) {
-        const similitud = calcularSimilitud(textoLimpio, barrio.toLowerCase());
-        if (similitud > mayorSimilitud) {
-          mayorSimilitud = similitud;
-          mejorCoincidencia = barrio;
-        }
+    let encontrado = false;
+    for (const barrio in barrios) {
+      if (textoLimpio.includes(barrio.toLowerCase())) {
+        mostrarImagenRA(barrios[barrio]);
+        encontrado = true;
+        break;
       }
-
-      if (mayorSimilitud > 0.8) { // Ajusta el umbral según sea necesario
-        document.getElementById('barrio-detectado').value = mejorCoincidencia;
-      } else {
-        document.getElementById('barrio-detectado').value = 'No reconocido';
-      }
-    }).catch(error => console.error('Error al reconocer el texto:', error));
-
-    requestAnimationFrame(procesarFrame);
-  }
-
-  procesarFrame();
-}
-
-function calcularSimilitud(a, b) {
-  let equivalencias = 0;
-  const minLength = Math.min(a.length, b.length);
-  const maxLength = Math.max(a.length, b.length);
-
-  for (let i = 0; i < minLength; i++) {
-    if (a[i] === b[i]) {
-      equivalencias++;
     }
-  }
 
-  return equivalencias / maxLength;
+    await worker.terminate();
+
+    if (encontrado) {
+      alert('Barrio reconocido correctamente, ok para continuar');
+    } else {
+      alert('No se reconoce el barrio ,Intentalo  de nuevo .');
+      location.reload();
+    }
+
+  } catch (error) {
+    console.error('Error al reconocer el barrio:', error);
+    alert('Error al reconocer el barrio.');
+    location.reload();
+  }
 }
 
-function mostrarImagenRA() {
-  const barrioDetectado = document.getElementById('barrio-detectado').value;
-  if (barrios[barrioDetectado]) {
-    const overlay = document.getElementById('overlay');
-    const imageContainer = document.querySelector('.image-container');
-    imageContainer.style.backgroundImage = `url(${barrios[barrioDetectado]})`;
-    overlay.style.display = 'flex';
-  } else {
-    alert('No se reconoce el barrio, inténtalo de nuevo.');
-  }
+function mostrarImagenRA(imagen) {
+  const overlay = document.getElementById('overlay');
+  const imageContainer = document.querySelector('.image-container');
+  imageContainer.style.backgroundImage = `url(${imagen})`;
+  overlay.style.display = 'flex';
 }
 
 document.getElementById('close-overlay').addEventListener('click', () => {
