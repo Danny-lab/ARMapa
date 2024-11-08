@@ -11,64 +11,79 @@ navigator.mediaDevices.enumerateDevices()
     const camera = document.getElementById('camera');
     camera.srcObject = stream;
     camera.play();
+    detectarBarrioEnTiempoReal(camera);
   })
   .catch(error => console.error('Error al obtener acceso a la cámara:', error));
 
-// Objeto con barrios y sus imágenes correspondientes
 const barrios = {
   "Andalucia": "imagenes/Andalucia.jpg",
-  "LA ROSA": "imagenes/Rosa.jpg",
+  "La Rosa": "imagenes/Rosa.jpg",
   "Barrio Moscu": "imagenes/Moscu.jpg",
   "Pablo VI": "imagenes/Pablo.jpg",
   "La Isla": "imagenes/Isla.jpg",
-  // Agrega más barrios aquí si es necesario
 };
 
 const worker = Tesseract.createWorker({
   logger: m => console.log(m)
 });
 
-async function reconocerTexto() {
-  try {
-    const camera = document.getElementById('camera');
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
+async function detectarBarrioEnTiempoReal(camera) {
+  await worker.load();
+  await worker.loadLanguage('spa');
+  await worker.initialize('spa');
+
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+
+  function procesarFrame() {
     canvas.width = camera.videoWidth;
     canvas.height = camera.videoHeight;
     context.drawImage(camera, 0, 0, canvas.width, canvas.height);
     const imageData = canvas.toDataURL('image/png');
 
-    await worker.load();
-    await worker.loadLanguage('spa');
-    await worker.initialize('spa');
-    const { data: { text } } = await worker.recognize(imageData);
-    console.log('Texto reconocido:', text);
+    worker.recognize(imageData).then(({ data: { text } }) => {
+      const textoLimpio = text.trim().toLowerCase().replace(/[^a-zA-Z0-9áéíóúñü\s]/g, '');
 
-    const textoLimpio = text.trim().toLowerCase().replace(/[^a-zA-Z0-9áéíóúñü\s]/g, '');
+      let mejorCoincidencia = null;
+      let mayorSimilitud = 0;
 
-    let encontrado = false;
-    for (const barrio in barrios) {
-      if (textoLimpio.includes(barrio.toLowerCase())) {
-        mostrarImagenRA(barrios[barrio]);
-        encontrado = true;
-        break;
+      for (const barrio in barrios) {
+        const similitud = calcularSimilitud(textoLimpio, barrio.toLowerCase());
+        if (similitud > mayorSimilitud) {
+          mayorSimilitud = similitud;
+          mejorCoincidencia = barrio;
+        }
       }
-    }
 
-    await worker.terminate();
+      if (mayorSimilitud > 0.8) { // Ajusta el umbral según sea necesario
+        aplicarZoom(camera);
+        mostrarImagenRA(barrios[mejorCoincidencia]);
+      }
+    }).catch(error => console.error('Error al reconocer el texto:', error));
 
-    if (encontrado) {
-      alert('Barrio reconocido correctamente, ok para continuar');
-    } else {
-      alert('No se reconoce el barrio ,Intentalo  de nuevo .');
-      location.reload();
-    }
-
-  } catch (error) {
-    console.error('Error al reconocer el barrio:', error);
-    alert('Error al reconocer el barrio.');
-    location.reload();
+    requestAnimationFrame(procesarFrame);
   }
+
+  procesarFrame();
+}
+
+function calcularSimilitud(a, b) {
+  let equivalencias = 0;
+  const minLength = Math.min(a.length, b.length);
+  const maxLength = Math.max(a.length, b.length);
+
+  for (let i = 0; i < minLength; i++) {
+    if (a[i] === b[i]) {
+      equivalencias++;
+    }
+  }
+
+  return equivalencias / maxLength;
+}
+
+function aplicarZoom(camera) {
+  camera.style.transform = 'scale(1.5)'; // Ajusta el valor de escala según sea necesario
+  camera.style.transformOrigin = 'center center';
 }
 
 function mostrarImagenRA(imagen) {
