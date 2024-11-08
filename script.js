@@ -20,9 +20,9 @@ async function iniciarCamara() {
 // Objeto con barrios y sus imágenes correspondientes
 const barrios = {
   "Andalucia": "imagenes/Andalucia.jpg",
-  "La Rosa": "imagenes/Rosa.jpg",
+  "Rosa": "imagenes/Rosa.jpg",
   "Barrio Moscu": "imagenes/Moscu.jpg",
-  "Pablo VI": "imagenes/Pablo.jpg",
+  "Pablo": "imagenes/Pablo.jpg",
   "La Isla": "imagenes/Isla.jpg",
 };
 
