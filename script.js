@@ -1,18 +1,21 @@
-navigator.mediaDevices.enumerateDevices()
-  .then(devices => {
+async function iniciarCamara() {
+  try {
+    const devices = await navigator.mediaDevices.enumerateDevices();
     const videoDevices = devices.filter(device => device.kind === 'videoinput');
-    const rearCamera = videoDevices.find(device => device.label.toLowerCase().includes('back')) || videoDevices[0];
+    const rearCamera = videoDevices.length > 1 ? videoDevices[videoDevices.length - 1] : videoDevices[0];
 
-    return navigator.mediaDevices.getUserMedia({
+    const stream = await navigator.mediaDevices.getUserMedia({
       video: { deviceId: rearCamera.deviceId }
     });
-  })
-  .then(stream => {
+    
     const camera = document.getElementById('camera');
     camera.srcObject = stream;
     camera.play();
-  })
-  .catch(error => console.error('Error al obtener acceso a la cámara:', error));
+  } catch (error) {
+    console.error('Error al obtener acceso a la cámara:', error);
+    alert('No se pudo acceder a la cámara. Verifique los permisos y vuelva a intentarlo.');
+  }
+}
 
 // Objeto con barrios y sus imágenes correspondientes
 const barrios = {
@@ -21,7 +24,6 @@ const barrios = {
   "Barrio Moscu": "imagenes/Moscu.jpg",
   "Pablo VI": "imagenes/Pablo.jpg",
   "La Isla": "imagenes/Isla.jpg",
-  // Agrega más barrios aquí si es necesario
 };
 
 const worker = Tesseract.createWorker({
@@ -44,7 +46,7 @@ async function reconocerTexto() {
     const { data: { text } } = await worker.recognize(imageData);
     console.log('Texto reconocido:', text);
 
-    const textoLimpio = text.trim().toLowerCase().replace(/[^a-zA-Z0-9áéíóúñü\s]/g, '');
+    const textoLimpio = text.trim().toLowerCase();
 
     let encontrado = false;
     for (const barrio in barrios) {
@@ -58,9 +60,9 @@ async function reconocerTexto() {
     await worker.terminate();
 
     if (encontrado) {
-      alert('Barrio reconocido correctamente, ok para continuar');
+      alert('Barrio reconocido correctamente. Pulsa OK para continuar');
     } else {
-      alert('No se reconoce el barrio ,Intentalo  de nuevo .');
+      alert('No se reconoce el barrio. Inténtalo de nuevo.');
       location.reload();
     }
 
@@ -82,3 +84,6 @@ document.getElementById('close-overlay').addEventListener('click', () => {
   document.getElementById('overlay').style.display = 'none';
   location.reload();
 });
+
+// Iniciar la cámara al cargar la página
+iniciarCamara();
