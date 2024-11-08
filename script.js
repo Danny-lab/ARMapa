@@ -11,57 +11,64 @@ navigator.mediaDevices.enumerateDevices()
     const camera = document.getElementById('camera');
     camera.srcObject = stream;
     camera.play();
-    detectarBarrioEnTiempoReal(camera);
   })
   .catch(error => console.error('Error al obtener acceso a la cámara:', error));
 
+// Objeto con barrios y sus imágenes correspondientes
 const barrios = {
   "Andalucia": "imagenes/Andalucia.jpg",
   "La Rosa": "imagenes/Rosa.jpg",
   "Barrio Moscu": "imagenes/Moscu.jpg",
   "Pablo VI": "imagenes/Pablo.jpg",
   "La Isla": "imagenes/Isla.jpg",
+  // Agrega más barrios aquí si es necesario
 };
 
 const worker = Tesseract.createWorker({
   logger: m => console.log(m)
 });
 
-async function detectarBarrioEnTiempoReal(camera) {
-  await worker.load();
-  await worker.loadLanguage('spa');
-  await worker.initialize('spa');
-
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
-
-  function procesarFrame() {
+async function reconocerTexto() {
+  try {
+    const camera = document.getElementById('camera');
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
     canvas.width = camera.videoWidth;
     canvas.height = camera.videoHeight;
     context.drawImage(camera, 0, 0, canvas.width, canvas.height);
     const imageData = canvas.toDataURL('image/png');
 
-    worker.recognize(imageData).then(({ data: { text } }) => {
-      const textoLimpio = text.trim().toLowerCase().replace(/[^a-zA-Z0-9áéíóúñü\s]/g, '');
+    await worker.load();
+    await worker.loadLanguage('spa');
+    await worker.initialize('spa');
+    const { data: { text } } = await worker.recognize(imageData);
+    console.log('Texto reconocido:', text);
 
-      for (const barrio in barrios) {
-        if (textoLimpio.includes(barrio.toLowerCase())) {
-          aplicarZoom(camera);
-          mostrarImagenRA(barrios[barrio]);
-          return;
-        }
+    const textoLimpio = text.trim().toLowerCase().replace(/[^a-zA-Z0-9áéíóúñü\s]/g, '');
+
+    let encontrado = false;
+    for (const barrio in barrios) {
+      if (textoLimpio.includes(barrio.toLowerCase())) {
+        mostrarImagenRA(barrios[barrio]);
+        encontrado = true;
+        break;
       }
-    }).catch(error => console.error('Error al reconocer el texto:', error));
+    }
 
-    requestAnimationFrame(procesarFrame);
+    await worker.terminate();
+
+    if (encontrado) {
+      alert('Barrio reconocido correctamente, ok para continuar');
+    } else {
+      alert('No se reconoce el barrio ,Intentalo  de nuevo .');
+      location.reload();
+    }
+
+  } catch (error) {
+    console.error('Error al reconocer el barrio:', error);
+    alert('Error al reconocer el barrio.');
+    location.reload();
   }
-
-  procesarFrame();
-}
-
-function aplicarZoom(camera) {
-  camera.style.transform = 'scale(1.5)'; // Ajusta el valor de escala según sea necesario
-  camera.style.transformOrigin = 'center center';
 }
 
 function mostrarImagenRA(imagen) {
