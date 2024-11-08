@@ -16,7 +16,7 @@ navigator.mediaDevices.enumerateDevices()
   .catch(error => console.error('Error al obtener acceso a la cámara:', error));
 
 const barrios = {
-  "Andalucia": "imagenes/Andalucia.jpg",
+  "1": "imagenes/Andalucia.jpg",
   "La Rosa": "imagenes/Rosa.jpg",
   "Barrio Moscu": "imagenes/Moscu.jpg",
   "Pablo VI": "imagenes/Pablo.jpg",
