@@ -7,21 +7,38 @@ async function iniciarCamara() {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { deviceId: rearCamera.deviceId }
     });
-    
+
     const camera = document.getElementById('camera');
     camera.srcObject = stream;
     camera.play();
+
+    // Mostrar el mensaje de escaneo activo
+    document.getElementById('mensajeEscaneando').style.display = 'block';
+
   } catch (error) {
     console.error('Error al obtener acceso a la cámara:', error);
     alert('No se pudo acceder a la cámara. Verifique los permisos y vuelva a intentarlo.');
   }
 }
 
+// Función para detener la cámara
+function detenerCamara() {
+  const camera = document.getElementById('camera');
+  const stream = camera.srcObject;
+  const tracks = stream.getTracks();
+  
+  tracks.forEach(track => track.stop());
+  camera.srcObject = null;
+
+  // Ocultar el mensaje de escaneo
+  document.getElementById('mensajeEscaneando').style.display = 'none';
+}
+
 // Objeto con barrios y sus imágenes correspondientes
 const barrios = {
   "Andalucia": "imagenes/Andalucia.jpg",
   "La Rosa": "imagenes/Rosa.jpg",
-  "Moscú": "imagenes/Moscu.jpg",
+  "Barrio Moscu": "imagenes/Moscu.jpg",
   "Pablo VI": "imagenes/Pablo.jpg",
   "La Isla": "imagenes/Isla.jpg",
 };
@@ -34,9 +51,9 @@ const worker = Tesseract.createWorker({
 // Función para normalizar texto eliminando tildes y caracteres especiales
 function limpiarTexto(texto) {
   return texto
-    .normalize("NFD") // Normaliza a una forma de descomposición
-    .replace(/[\u0300-\u036f]/g, "") // Elimina los caracteres de acento y diacríticos
-    .toLowerCase(); // Convierte el texto a minúsculas para la comparación
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
 }
 
 async function reconocerTexto() {
@@ -49,16 +66,13 @@ async function reconocerTexto() {
     context.drawImage(camera, 0, 0, canvas.width, canvas.height);
     const imageData = canvas.toDataURL('image/png');
 
-    // Cargar e inicializar Tesseract
     await worker.load();
     await worker.loadLanguage('spa');
     await worker.initialize('spa');
 
-    // Reconocer texto en la imagen
     const { data: { text } } = await worker.recognize(imageData);
     console.log('Texto reconocido:', text);
 
-    // Limpiar el texto reconocido para comparar sin tildes ni caracteres especiales
     const textoLimpio = limpiarTexto(text);
 
     let encontrado = false;
@@ -70,12 +84,11 @@ async function reconocerTexto() {
       }
     }
 
-    // Terminar el trabajador de Tesseract
     await worker.terminate();
 
-    // Mostrar mensaje según el resultado
     if (encontrado) {
       alert('Barrio reconocido correctamente. Pulsa OK para continuar');
+      detenerCamara(); // Detener la cámara cuando se reconoce el texto
     } else {
       alert('No se reconoce el barrio. Inténtalo de nuevo.');
       location.reload();
