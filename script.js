@@ -25,6 +25,8 @@ async function iniciarCamara() {
     "Pablo VI": "imagenes/Pablo.jpg",
     "La Isla": "imagenes/Isla.jpg",
     "El Playón": "imagenes/Playon.jpg",
+    "Santa Cruz": "imagenes/SantaCruz.jpg",
+    "La Francia": "imagenes/Francia.jpg",
     "Socorro": "imagenes/Socorro.jpg",
   };
   
