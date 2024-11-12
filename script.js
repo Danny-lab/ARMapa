@@ -24,7 +24,7 @@ async function iniciarCamara() {
     "Moscú": "imagenes/Moscu.jpg",
     "Pablo VI": "imagenes/Pablo.jpg",
     "La Isla": "imagenes/Isla.jpg",
-    "El Playón": "imagenes/Playon.jpg"
+    "Playón": "imagenes/Playon.jpg"
   };
   
   // Configuración del trabajador de Tesseract
